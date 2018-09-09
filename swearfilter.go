@@ -24,7 +24,6 @@ type SwearFilter struct {
 // New returns an initialized SwearFilter struct to check messages against
 func New(disableNormalize, disableSpacedTab, disableMutliWhitespaceStripping, disableSpacedBypass bool, words ...string) (filter *SwearFilter) {
 	filter = &SwearFilter{
-		Enabled:          true,
 		BlacklistedWords: words,
 	}
 	return
