@@ -18,7 +18,7 @@ type SwearFilter struct {
 	DisableSpacedTab                bool //Disables converting tabs to singular spaces (ex: [tab][tab] -> [space][space])
 	DisableMultiWhitespaceStripping bool //Disables stripping down multiple whitespaces (ex: hello[space][space]world -> hello[space]world)
 	DisableZeroWidthStripping       bool //Disables stripping zero-width spaces
-	DisableSpacedBypass             bool //Disables testing for spaced bypasses (if hell is in filter, look for occurrances of h and detect only alphabetic characters that follow; ex: h[space]e[space]l[space]l[space] -> hell)
+	DisableSpacedBypass             bool //Disables testing for spaced bypasses (if hell is in filter, look for occurrences of h and detect only alphabetic characters that follow; ex: h[space]e[space]l[space]l[space] -> hell)
 
 	BlacklistedWords []string //A list of words to blacklist
 }
