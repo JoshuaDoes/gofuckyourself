@@ -11,8 +11,6 @@ import (
 
 // SwearFilter contains settings for the swear filter
 type SwearFilter struct {
-	Enabled bool //Whether or not the swear filter is enabled
-
 	//Options to tell the swear filter how to operate
 	DisableNormalize                bool //Disables normalization of alphabetic characters if set to true (ex: à -> a)
 	DisableSpacedTab                bool //Disables converting tabs to singular spaces (ex: [tab][tab] -> [space][space])
