@@ -22,9 +22,14 @@ type SwearFilter struct {
 }
 
 // New returns an initialized SwearFilter struct to check messages against
-func New(disableNormalize, disableSpacedTab, disableMutliWhitespaceStripping, disableSpacedBypass bool, words ...string) (filter *SwearFilter) {
+func New(disableNormalize, disableSpacedTab, disableMutliWhitespaceStripping, disableZeroWidthStripping, disableSpacedBypass bool, words ...string) (filter *SwearFilter) {
 	filter = &SwearFilter{
-		BlacklistedWords: words,
+		DisableNormalize:                disableNormalize,
+		DisableSpacedTab:                disableSpacedTab,
+		DisableMultiWhitespaceStripping: disableMutliWhitespaceStripping,
+		DisableZeroWidthStripping:       disableZeroWidthStripping,
+		DisableSpacedBypass:             disableSpacedBypass,
+		BlacklistedWords:                words,
 	}
 	return
 }
