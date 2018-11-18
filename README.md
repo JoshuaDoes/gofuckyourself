@@ -18,14 +18,14 @@ import (
 	swearfilter "github.com/JoshuaDoes/gofuckyourself"
 )
 
-var message = "This is a fucking message with shitty swear words."
+var message = "This is a fûçking message with shitty swear words."
 var swears = []string{"fuck", "shit"}
 
 func main() {
-	filter := swearfilter.New(false, false, false, false, swears...)
+	filter := swearfilter.New(false, false, false, false, false, swears...)
 	swearFound, swearsFound, err := filter.Check(message)
 	fmt.Println("Swear found: ", swearFound)
-	fmt.Println("Swears found: ", swearsFound)
+	fmt.Println("Swears tripped: ", swearsFound)
 	fmt.Println("Error: ", err)
 }
 ```
@@ -33,7 +33,7 @@ func main() {
 ```
 > go run main.go
 Swear found:  true
-Swears found:  [fuck shit]
+Swears tripped:  [fuck shit]
 Error:  <nil>
 ```
 
