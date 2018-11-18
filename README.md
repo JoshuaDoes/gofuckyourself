@@ -2,6 +2,7 @@
 
 [![GoDoc](https://godoc.org/github.com/JoshuaDoes/gofuckyourself?status.svg)](https://godoc.org/github.com/JoshuaDoes/gofuckyourself)
 [![Go Report Card](https://goreportcard.com/badge/github.com/JoshuaDoes/gofuckyourself)](https://goreportcard.com/report/github.com/JoshuaDoes/gofuckyourself)
+[![cover.run](https://cover.run/go/github.com/JoshuaDoes/gofuckyourself.svg?style=flat&tag=golang-1.10)](https://cover.run/go?tag=golang-1.10&repo=github.com%2FJoshuaDoes%2Fgofuckyourself)
 
 A sanitization-based swear filter for Go.
 
