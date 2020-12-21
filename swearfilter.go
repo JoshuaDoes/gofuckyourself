@@ -89,7 +89,7 @@ func (filter *SwearFilter) Check(message string) (trippedWords []string, err err
 		}
 	}
 
-	if checkSpace && message == " " {
+	if checkSpace && message == "" {
 		trippedWords = append(trippedWords, " ")
 	}
 
