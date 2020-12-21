@@ -36,6 +36,7 @@ func (filter *SwearFilter) Check(message string) (trippedWords []string, err err
 		return nil, nil
 	}
 
+	//Normalize the text
 	if !filter.DisableNormalize {
 		bytes := make([]byte, len(message))
 		normalize := transform.Chain(norm.NFD, transform.RemoveFunc(func(r rune) bool {
@@ -48,14 +49,17 @@ func (filter *SwearFilter) Check(message string) (trippedWords []string, err err
 		message = string(bytes)
 	}
 
+	//Turn tabs into spaces
 	if !filter.DisableSpacedTab {
 		message = strings.Replace(message, "\t", " ", -1)
 	}
 
+	//Get rid of zero-width spaces
 	if !filter.DisableZeroWidthStripping {
 		message = strings.Replace(message, "\u200b", "", -1)
 	}
 
+	//Convert multiple re-occurring whitespaces into a single space
 	if !filter.DisableMultiWhitespaceStripping {
 		regexLeadCloseWhitepace := regexp.MustCompile(`^[\s\p{Zs}]+|[\s\p{Zs}]+$`)
 		message = regexLeadCloseWhitepace.ReplaceAllString(message, "")
@@ -64,7 +68,13 @@ func (filter *SwearFilter) Check(message string) (trippedWords []string, err err
 	}
 
 	trippedWords = make([]string, 0)
+	checkSpace := false
 	for _, swear := range filter.BadWords {
+		if swear == " " {
+			checkSpace = true
+			continue
+		}
+
 		if strings.Contains(message, swear) {
 			trippedWords = append(trippedWords, swear)
 			continue
@@ -76,6 +86,10 @@ func (filter *SwearFilter) Check(message string) (trippedWords []string, err err
 				trippedWords = append(trippedWords, swear)
 			}
 		}
+	}
+
+	if checkSpace && message == " " {
+		trippedWords = append(trippedWords, " ")
 	}
 }
 
