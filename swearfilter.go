@@ -80,10 +80,11 @@ func (filter *SwearFilter) Check(message string) (trippedWords []string, err err
 }
 
 //Add appends the given word to the uhohwords list
-func (filter *SwearFilter) Add(badWord string) {
+func (filter *SwearFilter) Add(badWords ...string) {
 	if filter.BadWords == nil {
-		filter.BadWords = make([]string, 0)
+		filter.BadWords = badWords
+		return
 	}
 
-	filter.BadWords = append(filter.BadWords, badWord)
+	filter.BadWords = append(filter.BadWords, badWords...)
 }
