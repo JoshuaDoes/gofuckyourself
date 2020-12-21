@@ -9,75 +9,81 @@ import (
 	"golang.org/x/text/unicode/norm"
 )
 
-// SwearFilter contains settings for the swear filter
+//SwearFilter contains settings for the swear filter
 type SwearFilter struct {
 	//Options to tell the swear filter how to operate
 	DisableNormalize                bool //Disables normalization of alphabetic characters if set to true (ex: à -> a)
 	DisableSpacedTab                bool //Disables converting tabs to singular spaces (ex: [tab][tab] -> [space][space])
 	DisableMultiWhitespaceStripping bool //Disables stripping down multiple whitespaces (ex: hello[space][space]world -> hello[space]world)
 	DisableZeroWidthStripping       bool //Disables stripping zero-width spaces
-	DisableSpacedBypass             bool //Disables testing for spaced bypasses (if hell is in filter, look for occurrences of h and detect only alphabetic characters that follow; ex: h[space]e[space]l[space]l[space] -> hell)
+	EnableSpacedBypass              bool //Disables testing for spaced bypasses (if hell is in filter, look for occurrences of h and detect only alphabetic characters that follow; ex: h[space]e[space]l[space]l[space] -> hell)
 
-	BlacklistedWords []string //A list of words to blacklist
+	//A list of words to check against the filters
+	BadWords []string
 }
 
-// New returns an initialized SwearFilter struct to check messages against
-func New(disableNormalize, disableSpacedTab, disableMutliWhitespaceStripping, disableZeroWidthStripping, disableSpacedBypass bool, words ...string) (filter *SwearFilter) {
+//NewSwearFilter returns an initialized SwearFilter struct to check messages against
+func NewSwearFilter(enableSpacedBypass bool, uhohwords ...string) (filter *SwearFilter) {
 	filter = &SwearFilter{
-		DisableNormalize:                disableNormalize,
-		DisableSpacedTab:                disableSpacedTab,
-		DisableMultiWhitespaceStripping: disableMutliWhitespaceStripping,
-		DisableZeroWidthStripping:       disableZeroWidthStripping,
-		DisableSpacedBypass:             disableSpacedBypass,
-		BlacklistedWords:                words,
+		EnableSpacedBypass: enableSpacedBypass,
+		BadWords:           uhohwords,
 	}
-	return
 }
 
-// Check checks if a message contains blacklisted words and returns whether or not it does, a list of blacklisted words if so, and any errors returned by external packages
-func (filter *SwearFilter) Check(message string) (bool, []string, error) {
-	if len(filter.BlacklistedWords) <= 0 {
-		return false, nil, nil
+//Check will return any words that trip an enabled swear filter, an error if any, or nothing if you've removed all the words for some reason
+func (filter *SwearFilter) Check(message string) (trippedWords []string, err error) {
+	if filter.BadWords == nil || len(filter.BadWords) == 0 {
+		return nil, nil
 	}
-
-	fixedMessage := message
 
 	if !filter.DisableNormalize {
-		bytes := make([]byte, len(fixedMessage))
+		bytes := make([]byte, len(message))
 		normalize := transform.Chain(norm.NFD, transform.RemoveFunc(func(r rune) bool {
 			return unicode.Is(unicode.Mn, r)
 		}), norm.NFC)
-		_, _, err := normalize.Transform(bytes, []byte(fixedMessage), true)
+		_, _, err = normalize.Transform(bytes, []byte(message), true)
 		if err != nil {
-			return false, nil, err
+			return nil, err
 		}
-		fixedMessage = string(bytes)
+		message = string(bytes)
 	}
 
 	if !filter.DisableSpacedTab {
-		fixedMessage = strings.Replace(fixedMessage, "\t", " ", -1)
+		message = strings.Replace(message, "\t", " ", -1)
 	}
 
 	if !filter.DisableZeroWidthStripping {
-		fixedMessage = strings.Replace(fixedMessage, "\u200b", "", -1)
+		message = strings.Replace(message, "\u200b", "", -1)
 	}
 
 	if !filter.DisableMultiWhitespaceStripping {
 		regexLeadCloseWhitepace := regexp.MustCompile(`^[\s\p{Zs}]+|[\s\p{Zs}]+$`)
+		message = regexLeadCloseWhitepace.ReplaceAllString(message, "")
 		regexInsideWhitespace := regexp.MustCompile(`[\s\p{Zs}]{2,}`)
-		fixedMessage = regexLeadCloseWhitepace.ReplaceAllString(fixedMessage, "")
-		fixedMessage = regexInsideWhitespace.ReplaceAllString(fixedMessage, "")
+		message = regexInsideWhitespace.ReplaceAllString(message, "")
 	}
 
-	detectedSwears := make([]string, 0)
-	for _, swear := range filter.BlacklistedWords {
-		if strings.Contains(fixedMessage, swear) {
-			detectedSwears = append(detectedSwears, swear)
+	trippedWords = make([]string, 0)
+	for _, swear := range filter.BadWords {
+		if strings.Contains(message, swear) {
+			trippedWords = append(trippedWords, swear)
+			continue
+		}
+
+		if filter.EnableSpacedBypass {
+			nospaceMessage := strings.Replace(message, " ", "", -1)
+			if strings.Contains(nospaceMessage, swear) {
+				trippedWords = append(trippedWords, swear)
+			}
 		}
 	}
+}
 
-	if len(detectedSwears) > 0 {
-		return true, detectedSwears, nil
+//Add appends the given word to the uhohwords list
+func (filter *SwearFilter) Add(badWord string) {
+	if filter.BadWords == nil {
+		filter.BadWords = make([]string, 0)
 	}
-	return false, nil, nil
+
+	filter.BadWords = append(filter.BadWords, badWord)
 }
