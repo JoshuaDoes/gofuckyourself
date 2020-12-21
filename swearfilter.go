@@ -28,6 +28,7 @@ func NewSwearFilter(enableSpacedBypass bool, uhohwords ...string) (filter *Swear
 		EnableSpacedBypass: enableSpacedBypass,
 		BadWords:           uhohwords,
 	}
+	return
 }
 
 //Check will return any words that trip an enabled swear filter, an error if any, or nothing if you've removed all the words for some reason
@@ -91,6 +92,8 @@ func (filter *SwearFilter) Check(message string) (trippedWords []string, err err
 	if checkSpace && message == " " {
 		trippedWords = append(trippedWords, " ")
 	}
+
+	return
 }
 
 //Add appends the given word to the uhohwords list
