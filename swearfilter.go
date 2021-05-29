@@ -117,3 +117,18 @@ func (filter *SwearFilter) Add(badWords ...string) {
 		filter.BadWords[word] = struct{}{}
 	}
 }
+
+//Load return the uhohwords list
+func (filter *SwearFilter) Load() (activeWords []string) {
+	filter.mutex.RLock()
+	defer filter.mutex.RUnlock()
+
+	if filter.BadWords == nil {
+		return nil
+	}
+
+	for word := range filter.BadWords {
+		activeWords = append(activeWords, word)
+	}
+	return
+}
