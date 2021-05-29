@@ -20,7 +20,7 @@ type SwearFilter struct {
 	EnableSpacedBypass              bool //Disables testing for spaced bypasses (if hell is in filter, look for occurrences of h and detect only alphabetic characters that follow; ex: h[space]e[space]l[space]l[space] -> hell)
 
 	//A list of words to check against the filters
-	BadWords []string
+	BadWords map[string]struct{}
 	mutex    sync.RWMutex
 }
 
@@ -28,7 +28,10 @@ type SwearFilter struct {
 func NewSwearFilter(enableSpacedBypass bool, uhohwords ...string) (filter *SwearFilter) {
 	filter = &SwearFilter{
 		EnableSpacedBypass: enableSpacedBypass,
-		BadWords:           uhohwords,
+		BadWords:           make(map[string]struct{}),
+	}
+	for _, word := range uhohwords {
+		filter.BadWords[word] = struct{}{}
 	}
 	return
 }
@@ -75,7 +78,7 @@ func (filter *SwearFilter) Check(message string) (trippedWords []string, err err
 
 	trippedWords = make([]string, 0)
 	checkSpace := false
-	for _, swear := range filter.BadWords {
+	for swear := range filter.BadWords {
 		if swear == " " {
 			checkSpace = true
 			continue
@@ -107,9 +110,10 @@ func (filter *SwearFilter) Add(badWords ...string) {
 	defer filter.mutex.Unlock()
 
 	if filter.BadWords == nil {
-		filter.BadWords = badWords
-		return
+		filter.BadWords = make(map[string]struct{})
 	}
 
-	filter.BadWords = append(filter.BadWords, badWords...)
+	for _, word := range badWords {
+		filter.BadWords[word] = struct{}{}
+	}
 }

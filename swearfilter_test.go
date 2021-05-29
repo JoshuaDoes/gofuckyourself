@@ -24,12 +24,6 @@ func TestNew(t *testing.T) {
 	if len(filter.BadWords) != 2 {
 		t.Errorf("Filter option BadWords was incorrect, got length: %d, want length: %d", len(filter.BadWords), 2)
 	}
-	if filter.BadWords[0] != "fuck" {
-		t.Errorf("Filter option BadWords was incorrect, got first word: %s, want first word: %s", filter.BadWords[0], "fuck")
-	}
-	if filter.BadWords[1] != "hell" {
-		t.Errorf("Filter option BadWords was incorrect, got second word: %s, want second word: %s", filter.BadWords[1], "hell")
-	}
 }
 
 func TestCheck(t *testing.T) {
