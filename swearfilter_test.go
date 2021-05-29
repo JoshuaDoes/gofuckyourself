@@ -12,13 +12,13 @@ func TestNew(t *testing.T) {
 	if filter.DisableSpacedTab {
 		t.Errorf("Filter option DisableSpacedTab was incorrect, got: %t, want: %t", filter.DisableSpacedTab, false)
 	}
-	if !filter.DisableMultiWhitespaceStripping {
+	if filter.DisableMultiWhitespaceStripping {
 		t.Errorf("Filter option DisableMultiWhitespaceStripping was incorrect, got: %t, want: %t", filter.DisableMultiWhitespaceStripping, false)
 	}
 	if filter.DisableZeroWidthStripping {
 		t.Errorf("Filter option DisableZeroWidthStripping was incorrect, got: %t, want: %t", filter.DisableZeroWidthStripping, false)
 	}
-	if filter.EnableSpacedBypass {
+	if !filter.EnableSpacedBypass {
 		t.Errorf("Filter option EnableSpacedBypass was incorrect, got: %t, want: %t", filter.EnableSpacedBypass, true)
 	}
 	if len(filter.BadWords) != 2 {
