@@ -3,6 +3,7 @@ package swearfilter
 import (
 	"regexp"
 	"strings"
+	"sync"
 	"unicode"
 
 	"golang.org/x/text/transform"
@@ -20,6 +21,7 @@ type SwearFilter struct {
 
 	//A list of words to check against the filters
 	BadWords []string
+	mutex    sync.RWMutex
 }
 
 //NewSwearFilter returns an initialized SwearFilter struct to check messages against
@@ -33,6 +35,9 @@ func NewSwearFilter(enableSpacedBypass bool, uhohwords ...string) (filter *Swear
 
 //Check will return any words that trip an enabled swear filter, an error if any, or nothing if you've removed all the words for some reason
 func (filter *SwearFilter) Check(message string) (trippedWords []string, err error) {
+	filter.mutex.RLock()
+	defer filter.mutex.RUnlock()
+
 	if filter.BadWords == nil || len(filter.BadWords) == 0 {
 		return nil, nil
 	}
@@ -98,6 +103,9 @@ func (filter *SwearFilter) Check(message string) (trippedWords []string, err err
 
 //Add appends the given word to the uhohwords list
 func (filter *SwearFilter) Add(badWords ...string) {
+	filter.mutex.Lock()
+	defer filter.mutex.Unlock()
+
 	if filter.BadWords == nil {
 		filter.BadWords = badWords
 		return
