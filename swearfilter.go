@@ -118,8 +118,8 @@ func (filter *SwearFilter) Add(badWords ...string) {
 	}
 }
 
-//Remove removes the given word from the uhohwords list
-func (filter *SwearFilter) Remove(badWords ...string) {
+//Delete deletes the given word from the uhohwords list
+func (filter *SwearFilter) Delete(badWords ...string) {
 	filter.mutex.Lock()
 	defer filter.mutex.Unlock()
 
