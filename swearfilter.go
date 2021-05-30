@@ -118,6 +118,16 @@ func (filter *SwearFilter) Add(badWords ...string) {
 	}
 }
 
+//Remove removes the given word from the uhohwords list
+func (filter *SwearFilter) Remove(badWords ...string) {
+	filter.mutex.Lock()
+	defer filter.mutex.Unlock()
+
+	for _, word := range badWords {
+		delete(filter.BadWords, word)
+	}
+}
+
 //Load return the uhohwords list
 func (filter *SwearFilter) Load() (activeWords []string) {
 	filter.mutex.RLock()
