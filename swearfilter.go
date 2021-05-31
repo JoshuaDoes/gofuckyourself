@@ -37,13 +37,15 @@ func NewSwearFilter(enableSpacedBypass bool, uhohwords ...string) (filter *Swear
 }
 
 //Check will return any words that trip an enabled swear filter, an error if any, or nothing if you've removed all the words for some reason
-func (filter *SwearFilter) Check(message string) (trippedWords []string, err error) {
+func (filter *SwearFilter) Check(msg string) (trippedWords []string, err error) {
 	filter.mutex.RLock()
 	defer filter.mutex.RUnlock()
 
 	if filter.BadWords == nil || len(filter.BadWords) == 0 {
 		return nil, nil
 	}
+
+	message := strings.ToLower(msg)
 
 	//Normalize the text
 	if !filter.DisableNormalize {
