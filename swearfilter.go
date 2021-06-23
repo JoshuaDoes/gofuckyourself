@@ -130,8 +130,8 @@ func (filter *SwearFilter) Delete(badWords ...string) {
 	}
 }
 
-//Load return the uhohwords list
-func (filter *SwearFilter) Load() (activeWords []string) {
+//Words return the uhohwords list
+func (filter *SwearFilter) Words() (activeWords []string) {
 	filter.mutex.RLock()
 	defer filter.mutex.RUnlock()
 
