@@ -21,6 +21,9 @@ func TestNew(t *testing.T) {
 	if !filter.EnableSpacedBypass {
 		t.Errorf("Filter option EnableSpacedBypass was incorrect, got: %t, want: %t", filter.EnableSpacedBypass, true)
 	}
+	if filter.DisableLeetSpeak {
+		t.Errorf("Filter option DisableLeetSpeak was incorrect, got: %t, want: %t", filter.EnableSpacedBypass, false)
+	}
 	if len(filter.BadWords) != 2 {
 		t.Errorf("Filter option BadWords was incorrect, got length: %d, want length: %d", len(filter.BadWords), 2)
 	}
@@ -28,7 +31,7 @@ func TestNew(t *testing.T) {
 
 func TestCheck(t *testing.T) {
 	filter := NewSwearFilter(true, "fuck")
-	messages := []string{"fucking", "fûçk", "asdf", "what the f u c k dude"}
+	messages := []string{"fucking", "fûçk", "asdf", "what the f u c k dude", "phuck", "fuc|<"}
 
 	for i := 0; i < len(messages); i++ {
 		trippers, err := filter.Check(messages[i])
@@ -36,7 +39,7 @@ func TestCheck(t *testing.T) {
 			t.Errorf("Check failed due to external dependency: %v", err)
 		}
 		switch i {
-		case 0, 1, 3:
+		case 0, 1, 3, 4, 5:
 			if len(trippers) != 1 {
 				t.Errorf("Check did not act as expected, got trippers length: %d, want trippers length: %d", len(trippers), 1)
 			}
