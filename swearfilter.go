@@ -1,25 +1,25 @@
 package swearfilter
 
 import (
+	"fmt"
+	"golang.org/x/text/transform"
+	"golang.org/x/text/unicode/norm"
 	"regexp"
 	"strings"
 	"sync"
 	"unicode"
-
-	"golang.org/x/text/transform"
-	"golang.org/x/text/unicode/norm"
 )
 
 var multiCharLeet = map[string]string{
-	"vv":       "w",
-	"uu":       "w",
-	"\\//\\//": "w",
-	"><":       "x",
-	"1<":       "k",
-	"|<":       "k",
-	"()":       "o",
-	"[]":       "o",
-	"ph":       "f",
+	"vv":   "w",
+	"uu":   "w",
+	`\/\/`: "w",
+	"><":   "x",
+	"1<":   "k",
+	"|<":   "k",
+	"()":   "o",
+	"[]":   "o",
+	"ph":   "f",
 }
 
 var leetChars = map[string]string{
@@ -30,7 +30,7 @@ var leetChars = map[string]string{
 	"<": "c",
 	"[": "c",
 	"3": "e",
-	"€": "e",
+	`€`: "e", // Unicode escape
 	"6": "g",
 	"9": "g",
 	"#": "h",
@@ -87,6 +87,9 @@ func (filter *SwearFilter) Check(msg string) (trippedWords []string, err error) 
 
 	message := strings.ToLower(msg)
 
+	if !filter.DisableLeetSpeak {
+		message = filter.normalizeLeetSpeak(message)
+	}
 	//Normalize the text
 	if !filter.DisableNormalize {
 		bytes := make([]byte, len(message))
@@ -98,9 +101,6 @@ func (filter *SwearFilter) Check(msg string) (trippedWords []string, err error) 
 			return nil, err
 		}
 		message = string(bytes)
-	}
-	if !filter.DisableLeetSpeak {
-		message = filter.normalizeLeetSpeak(message)
 	}
 	//Turn tabs into spaces
 	if !filter.DisableSpacedTab {
@@ -149,9 +149,6 @@ func (filter *SwearFilter) Check(msg string) (trippedWords []string, err error) 
 }
 
 func (filter *SwearFilter) normalizeLeetSpeak(message string) string {
-	if filter.DisableLeetSpeak {
-		return message
-	}
 
 	normalized := strings.ToLower(message)
 
@@ -161,13 +158,13 @@ func (filter *SwearFilter) normalizeLeetSpeak(message string) string {
 		normalized = strings.ReplaceAll(normalized, leet, normal)
 	}
 
+	fmt.Printf("After multi char replace: %v \n", normalized)
 	// Handle single character replacements
 	for leet, normal := range leetChars {
-		if len(leet) == 1 { // Only process single-character replacements
-			normalized = strings.ReplaceAll(normalized, leet, normal)
-		}
+		normalized = strings.ReplaceAll(normalized, leet, normal)
 	}
 
+	fmt.Printf("After single char replace: %v \n", normalized)
 	return normalized
 }
 
