@@ -1,7 +1,6 @@
 package swearfilter
 
 import (
-	"fmt"
 	"golang.org/x/text/transform"
 	"golang.org/x/text/unicode/norm"
 	"regexp"
@@ -34,11 +33,6 @@ var leetChars = map[string]string{
 	"6": "g",
 	"9": "g",
 	"#": "h",
-	"1": "i",
-	"!": "i",
-	"|": "i",
-	"]": "i",
-	"}": "i",
 	"j": "i",
 	"0": "o",
 	"5": "s",
@@ -47,6 +41,14 @@ var leetChars = map[string]string{
 	"+": "t",
 	"v": "u",
 	"2": "z",
+}
+
+var ambiguousLeetMap = map[string][]string{
+	"!": {"i", "l"},
+	"|": {"i", "l"},
+	"1": {"i", "l"},
+	"]": {"i", "l"},
+	"}": {"i", "l"},
 }
 
 // SwearFilter contains settings for the swear filter
@@ -158,13 +160,27 @@ func (filter *SwearFilter) normalizeLeetSpeak(message string) string {
 		normalized = strings.ReplaceAll(normalized, leet, normal)
 	}
 
-	fmt.Printf("After multi char replace: %v \n", normalized)
 	// Handle single character replacements
 	for leet, normal := range leetChars {
 		normalized = strings.ReplaceAll(normalized, leet, normal)
 	}
 
-	fmt.Printf("After single char replace: %v \n", normalized)
+	var possibleStrings []string
+	for leet, possibilities := range ambiguousLeetMap {
+		if strings.Contains(normalized, leet) {
+			for _, replacement := range possibilities {
+				newStr := strings.ReplaceAll(normalized, leet, replacement)
+				possibleStrings = append(possibleStrings, newStr)
+			}
+		}
+	}
+
+	// Join all possible interpretations with spaces and check as one string
+	if len(possibleStrings) > 0 {
+		normalized = strings.Join(possibleStrings, " ")
+
+	}
+
 	return normalized
 }
 
