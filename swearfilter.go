@@ -1,16 +1,57 @@
 package swearfilter
 
 import (
+	"golang.org/x/text/transform"
+	"golang.org/x/text/unicode/norm"
 	"regexp"
 	"strings"
 	"sync"
 	"unicode"
-
-	"golang.org/x/text/transform"
-	"golang.org/x/text/unicode/norm"
 )
 
-//SwearFilter contains settings for the swear filter
+var multiCharLeet = map[string]string{
+	"vv":   "w",
+	"uu":   "w",
+	`\/\/`: "w",
+	"><":   "x",
+	"1<":   "k",
+	"|<":   "k",
+	"()":   "o",
+	"[]":   "o",
+	"ph":   "f",
+}
+
+var leetChars = map[string]string{
+	"4": "a",
+	"@": "a",
+	"8": "b",
+	"(": "c",
+	"<": "c",
+	"[": "c",
+	"3": "e",
+	`€`: "e", // Unicode escape
+	"6": "g",
+	"9": "g",
+	"#": "h",
+	"j": "i",
+	"0": "o",
+	"5": "s",
+	"$": "s",
+	"7": "t",
+	"+": "t",
+	"v": "u",
+	"2": "z",
+}
+
+var ambiguousLeetMap = map[string][]string{
+	"!": {"i", "l"},
+	"|": {"i", "l"},
+	"1": {"i", "l"},
+	"]": {"i", "l"},
+	"}": {"i", "l"},
+}
+
+// SwearFilter contains settings for the swear filter
 type SwearFilter struct {
 	//Options to tell the swear filter how to operate
 	DisableNormalize                bool //Disables normalization of alphabetic characters if set to true (ex: à -> a)
@@ -18,13 +59,14 @@ type SwearFilter struct {
 	DisableMultiWhitespaceStripping bool //Disables stripping down multiple whitespaces (ex: hello[space][space]world -> hello[space]world)
 	DisableZeroWidthStripping       bool //Disables stripping zero-width spaces
 	EnableSpacedBypass              bool //Disables testing for spaced bypasses (if hell is in filter, look for occurrences of h and detect only alphabetic characters that follow; ex: h[space]e[space]l[space]l[space] -> hell)
+	DisableLeetSpeak                bool
 
 	//A list of words to check against the filters
 	BadWords map[string]struct{}
 	mutex    sync.RWMutex
 }
 
-//NewSwearFilter returns an initialized SwearFilter struct to check messages against
+// NewSwearFilter returns an initialized SwearFilter struct to check messages against
 func NewSwearFilter(enableSpacedBypass bool, uhohwords ...string) (filter *SwearFilter) {
 	filter = &SwearFilter{
 		EnableSpacedBypass: enableSpacedBypass,
@@ -36,7 +78,7 @@ func NewSwearFilter(enableSpacedBypass bool, uhohwords ...string) (filter *Swear
 	return
 }
 
-//Check will return any words that trip an enabled swear filter, an error if any, or nothing if you've removed all the words for some reason
+// Check will return any words that trip an enabled swear filter, an error if any, or nothing if you've removed all the words for some reason
 func (filter *SwearFilter) Check(msg string) (trippedWords []string, err error) {
 	filter.mutex.RLock()
 	defer filter.mutex.RUnlock()
@@ -47,6 +89,9 @@ func (filter *SwearFilter) Check(msg string) (trippedWords []string, err error) 
 
 	message := strings.ToLower(msg)
 
+	if !filter.DisableLeetSpeak {
+		message = filter.normalizeLeetSpeak(message)
+	}
 	//Normalize the text
 	if !filter.DisableNormalize {
 		bytes := make([]byte, len(message))
@@ -59,7 +104,6 @@ func (filter *SwearFilter) Check(msg string) (trippedWords []string, err error) 
 		}
 		message = string(bytes)
 	}
-
 	//Turn tabs into spaces
 	if !filter.DisableSpacedTab {
 		message = strings.Replace(message, "\t", " ", -1)
@@ -106,7 +150,41 @@ func (filter *SwearFilter) Check(msg string) (trippedWords []string, err error) 
 	return
 }
 
-//Add appends the given word to the uhohwords list
+func (filter *SwearFilter) normalizeLeetSpeak(message string) string {
+
+	normalized := strings.ToLower(message)
+
+	// Handle multi-character replacements first
+
+	for leet, normal := range multiCharLeet {
+		normalized = strings.ReplaceAll(normalized, leet, normal)
+	}
+
+	// Handle single character replacements
+	for leet, normal := range leetChars {
+		normalized = strings.ReplaceAll(normalized, leet, normal)
+	}
+
+	var possibleStrings []string
+	for leet, possibilities := range ambiguousLeetMap {
+		if strings.Contains(normalized, leet) {
+			for _, replacement := range possibilities {
+				newStr := strings.ReplaceAll(normalized, leet, replacement)
+				possibleStrings = append(possibleStrings, newStr)
+			}
+		}
+	}
+
+	// Join all possible interpretations with spaces and check as one string
+	if len(possibleStrings) > 0 {
+		normalized = strings.Join(possibleStrings, " ")
+
+	}
+
+	return normalized
+}
+
+// Add appends the given word to the uhohwords list
 func (filter *SwearFilter) Add(badWords ...string) {
 	filter.mutex.Lock()
 	defer filter.mutex.Unlock()
@@ -120,7 +198,7 @@ func (filter *SwearFilter) Add(badWords ...string) {
 	}
 }
 
-//Delete deletes the given word from the uhohwords list
+// Delete deletes the given word from the uhohwords list
 func (filter *SwearFilter) Delete(badWords ...string) {
 	filter.mutex.Lock()
 	defer filter.mutex.Unlock()
@@ -130,7 +208,7 @@ func (filter *SwearFilter) Delete(badWords ...string) {
 	}
 }
 
-//Words return the uhohwords list
+// Words return the uhohwords list
 func (filter *SwearFilter) Words() (activeWords []string) {
 	filter.mutex.RLock()
 	defer filter.mutex.RUnlock()
