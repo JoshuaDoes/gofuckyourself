@@ -1,5 +1,5 @@
-module swearfilter
+module github.com/JoshuaDoes/gofuckyourself
 
-go 1.16
+go 1.23.4
 
-require golang.org/x/text v0.3.8
+require golang.org/x/text v0.25.0

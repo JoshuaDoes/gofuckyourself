@@ -1,8 +1,9 @@
-package swearfilter
+package gofuckyourself
 
 import (
 	"golang.org/x/text/transform"
 	"golang.org/x/text/unicode/norm"
+
 	"regexp"
 	"strings"
 	"sync"

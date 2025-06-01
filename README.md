@@ -1,3 +1,4 @@
+
 # gofuckyourself
 
 [![GoDoc](https://godoc.org/github.com/JoshuaDoes/gofuckyourself?status.svg)](https://godoc.org/github.com/JoshuaDoes/gofuckyourself)
@@ -10,32 +11,16 @@ A sanitization-based swear filter for Go.
 `go get github.com/JoshuaDoes/gofuckyourself`
 
 # Example
-```Go
-package main
+An up to date example can be found in the `example` subdirectory.
 
-import (
-	"fmt"
-
-	swearfilter "github.com/JoshuaDoes/gofuckyourself"
-)
-
-var message = "This is a fûçking message with shitty swear words."
-var swears = []string{"fuck", "shit"}
-
-func main() {
-	filter := swearfilter.New(false, false, false, false, false, swears...)
-	swearFound, swearsFound, err := filter.Check(message)
-	fmt.Println("Swear found: ", swearFound)
-	fmt.Println("Swears tripped: ", swearsFound)
-	fmt.Println("Error: ", err)
-}
-```
 ### Output
 ```
-> go run main.go
-Swear found:  true
-Swears tripped:  [fuck shit]
-Error:  <nil>
+> git clone https://github.com/JoshuaDoes/gofuckyourself
+...
+> cd gofuckyourself
+> go run ./example "This is a fûçking A S S of a message with shitty swear words." fuck shit ass
+Message: This is a fûçking A S S of a message with shitty swear words.
+Swears: [ass fuck shit]
 ```
 
 ## License

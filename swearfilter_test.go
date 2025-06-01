@@ -1,4 +1,4 @@
-package swearfilter
+package gofuckyourself
 
 import (
 	"testing"
@@ -22,7 +22,7 @@ func TestNew(t *testing.T) {
 		t.Errorf("Filter option EnableSpacedBypass was incorrect, got: %t, want: %t", filter.EnableSpacedBypass, true)
 	}
 	if filter.DisableLeetSpeak {
-		t.Errorf("Filter option DisableLeetSpeak was incorrect, got: %t, want: %t", filter.EnableSpacedBypass, false)
+		t.Errorf("Filter option DisableLeetSpeak was incorrect, got: %t, want: %t", filter.DisableLeetSpeak, false)
 	}
 	if len(filter.BadWords) != 2 {
 		t.Errorf("Filter option BadWords was incorrect, got length: %d, want length: %d", len(filter.BadWords), 2)
